@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Agriculture Plot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+</head>
+
+<body>
+
+  <main class="container dashboard">
+
+    <div class="item moisture my-4">
+      <div class="value_container">
+        <h3>Soil Moisture Level:</h3>
+        <div class="value">
+          <div id="data_soilmoisture" class="data">0</div>
+          <div class="unit">%</div>
+        </div>
+      </div>
+      <div class="chart">
+        <canvas id="moisChart"></canvas>
+      </div>
+      <div class="alert alert_moisture">Water need to be supplied!</div>
+      <div class="message message_moisture">Thanks for giving me water!</div>
+    </div>
+
+    <div class="secondary_info row">
+      <div class="col-lg-6 col-md-6">
+        <div class="item temp">
+          <div class="value_container">
+            <h3>Temperature:</h3>
+            <div class="value">
+              <div id="data_temp" class="data">0</div>
+              <div class="unit">°C</div>
+            </div>
+          </div>
+          <div class="chart">
+            <canvas id="tempChart"></canvas>
+          </div>
+          <div class="alert alert_temp"></div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6">
+        <div class="item light">
+          <div class="value_container">
+            <h3>Light Level:</h3>
+            <div class="value">
+              <div id="data_light" class="data">0</div>
+              <div class="unit"></div>
+            </div>
+          </div>
+          <div class="chart">
+            <canvas id="lightChart"></canvas>
+          </div>
+          <div class="alert alert_light"></div>
+        </div>  
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+
+  <script>
+
+    // Chart.js for Temp
+    var socket = io.connect()
+
+    var tooltip = {
+      // Disable the on-canvas tooltip
+      enabled: false,
+
+      custom: function (tooltipModel) {
+        // Tooltip Element
+        var tooltipEl = document.getElementById('chartjs-tooltip');
+
+        // Create element on first render
+        if (!tooltipEl) {
+          tooltipEl = document.createElement('div');
+          tooltipEl.id = 'chartjs-tooltip';
+          tooltipEl.innerHTML = '<table></table>';
+          document.body.appendChild(tooltipEl);
+        }
+
+        // Hide if no tooltip
+        if (tooltipModel.opacity === 0) {
+          tooltipEl.style.opacity = 0;
+          return;
+        }
+
+        // Set caret Position
+        tooltipEl.classList.remove('above', 'below', 'no-transform');
+        if (tooltipModel.yAlign) {
+          tooltipEl.classList.add(tooltipModel.yAlign);
+        } else {
+          tooltipEl.classList.add('no-transform');
+        }
+
+        function getBody(bodyItem) {
+          return bodyItem.lines;
+        }
+
+        // Set Text
+        if (tooltipModel.body) {
+          var titleLines = tooltipModel.title || [];
+          var bodyLines = tooltipModel.body.map(getBody);
+
+          var innerHtml = '<thead>';
+
+          titleLines.forEach(function (title) {
+            innerHtml += '<tr><th>' + title + '</th></tr>';
+          });
+          innerHtml += '</thead><tbody>';
+
+          bodyLines.forEach(function (body, i) {
+            var colors = tooltipModel.labelColors[i];
+            var style = 'background:' + colors.backgroundColor;
+            style += '; border-color:' + colors.borderColor;
+            style += '; border-width: 10px';
+            var span = '<span style="' + style + '"></span>';
+            innerHtml += '<tr><td>' + span + body + '</td></tr>';
+          });
+          innerHtml += '</tbody>';
+
+          var tableRoot = tooltipEl.querySelector('table');
+          tableRoot.innerHTML = innerHtml;
+        }
+
+        // `this` will be the overall tooltip
+        var position = this._chart.canvas.getBoundingClientRect();
+
+        // Display, position, and set styles for font
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.position = 'absolute';
+        tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX - ((tooltipEl.offsetWidth) / 2) + 'px';
+        tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY - ((tooltipEl.offsetHeight) + 20) + 'px';
+        tooltipEl.style.fontFamily = tooltipModel._bodyFontFamily;
+        tooltipEl.style.fontSize = tooltipModel.bodyFontSize + 'px';
+        tooltipEl.style.fontStyle = tooltipModel._bodyFontStyle;
+        tooltipEl.style.padding = tooltipModel.yPadding + 'px ' + tooltipModel.xPadding + 'px';
+        tooltipEl.style.pointerEvents = 'none';
+        tooltipEl.style.transition = 'ease';
+      }
+    }
+
+
+    socket.on('tempLevel', function (tempLevel) {
+      var length = dataTemp.labels.length
+      if (length >= 40) {
+        dataTemp.datasets[0].data.shift()
+        dataTemp.labels.shift()
+      }
+
+      dataTemp.labels.push(moment().format('HH:mm:ss'))
+      dataTemp.datasets[0].data.push(tempLevel)
+      chartTemp.update()
+
+      $('#data_temp').text(tempLevel);
+    })
+
+    socket.on('moistureLevel', function (moistureLevel) {
+      var length = dataMoisture.labels.length
+      if (length >= 40) {
+        dataMoisture.datasets[0].data.shift()
+        dataMoisture.labels.shift()
+      }
+
+      dataMoisture.labels.push(moment().format('HH:mm:ss'))
+      dataMoisture.datasets[0].data.push(moistureLevel)
+      chartMoisture.update()
+
+      $('#data_soilmoisture').text(moistureLevel);
+    });
+
+    socket.on('lightLevel', function (lightLevel) {
+      var length = dataLight.labels.length
+      if (length >= 40) {
+        dataLight.datasets[0].data.shift()
+        dataLight.labels.shift()
+      }
+
+      dataLight.labels.push(moment().format('HH:mm:ss'))
+      dataLight.datasets[0].data.push(lightLevel)
+      chartLight.update()
+
+      $('#data_light').text(lightLevel);
+    });
+
+  </script>
+
+  <script type="text/javascript" src="js/moisturechart.js"></script>
+  <script type="text/javascript" src="js/tempchart.js"></script>
+  <script type="text/javascript" src="js/lightchart.js"></script>
+
+</body>
+
+</html>
