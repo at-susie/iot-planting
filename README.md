@@ -9,9 +9,13 @@ IOT planting prototype app using Arduino and some sensors like soil moisture sen
 
 ### Code
 Configure your WiFi network in `arduino_secrets.h`.
+```
+#define SECRET_SSID "Your Router's SSID"
+#define SECRET_PASS "Your Router's Password"
+```
 And enter your server address in `arduino_nodejs.ino`.
 ```
-char serverAddress[] = "";  // server address
+char serverAddress[] = "Your server address";
 ```
 
 ## Server
