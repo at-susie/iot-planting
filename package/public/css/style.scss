@@ -45,7 +45,7 @@ body {
   right: 0;
   bottom: 0;
   top: 0;
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Nunito', sans-serif !important;
   background: rgba(0, 0, 0, 0.1) !important;
   display: flex;
   justify-content: center;
@@ -129,17 +129,19 @@ body * {
       }
     }
   }
+  .feedback {
+    font-size: 1.5rem;
+    font-weight: 900;
+    padding: 0 0 0 0;
+  }
   .alert {
     color: rgb(255, 72, 0);
-    font-weight: bold;
-    padding: 0 0 0 0;
     opacity: 0;
     line-height: 0;
+    margin-bottom: 0 !important;
   }
   .message {
     color: rgb(86, 168, 208);
-    font-weight: bold;
-    padding: 0 0 0 0;
     opacity: 0;
     line-height: 0;
   }

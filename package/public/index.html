@@ -34,8 +34,8 @@
       <div class="chart">
         <canvas id="moisChart"></canvas>
       </div>
-      <div class="alert alert_moisture">Water need to be supplied!</div>
-      <div class="message message_moisture">Thanks for giving me water!</div>
+      <div class="feedback alert alert_moisture">Water need to be supplied!</div>
+      <div class="feedback message message_moisture">Thanks for giving me water!</div>
     </div>
 
     <div class="secondary_info row">
@@ -163,7 +163,7 @@
 
     socket.on('tempLevel', function (tempLevel) {
       var length = dataTemp.labels.length
-      if (length >= 40) {
+      if (length >= 48) {
         dataTemp.datasets[0].data.shift()
         dataTemp.labels.shift()
       }
@@ -177,7 +177,7 @@
 
     socket.on('moistureLevel', function (moistureLevel) {
       var length = dataMoisture.labels.length
-      if (length >= 40) {
+      if (length >= 48) {
         dataMoisture.datasets[0].data.shift()
         dataMoisture.labels.shift()
       }
@@ -191,7 +191,7 @@
 
     socket.on('lightLevel', function (lightLevel) {
       var length = dataLight.labels.length
-      if (length >= 40) {
+      if (length >= 48) {
         dataLight.datasets[0].data.shift()
         dataLight.labels.shift()
       }
